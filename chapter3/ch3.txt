@@ -1,0 +1,354 @@
+3.0 exercise
+---------------
+Start the exercise . 
+# start up your lab environment--run Docker Desktop if it's not running--
+# and switch to this chapter’s directory in your copy of the source code:
+cd ch03
+ 
+# create two Deployments, sleep1.yml and sleep2.yml located in sleep directory
+ 
+# wait for the Pod to be ready with label as app=sleep-2
+
+ 
+# check the IP address of the second Pod of the label app=sleep2 and get the pod IP Address. 
+
+# use that address to ping the second Pod from the first (get the ip address of the second pod):
+
+3.1 exercise
+---------------
+Verify that if a pod is restarted you will get a new ip address. 
+
+# check the current Pod’s IP address:
+
+# delete the Pod so the Deployment replaces it:
+
+# check the IP address of the replacement Pod:
+
+
+3.2 exercise . 
+----------------
+
+# deploy the Service defined in listing 3.1: sleep/sleep2-service.yaml
+# show the basic details of the Service:
+
+# run a ping command to check connectivity--this will fail . Run the command from sleep-1 deployment. 
+
+
+3.3 exercise
+-------------
+
+# run the website and API as separate Deployments: numbers/api.yaml and numbers/web.yaml
+
+ 
+# wait for the Pod to be ready with label app=numbers-web
+ 
+# forward a port to the web app . Port forward deploy/numbers-web to 8080 from 80
+
+ 
+# browse to the site at http://localhost:8080 and click the Go button
+# --you'll see an error message
+ 
+# exit the port forward:
+ctrl-c
+
+3.4 exercise
+-------------
+
+# deploy the Service from listing 3.2: numbers/api-service.yaml
+# check the Service details:
+# forward a port to the web app:
+# browse to the site at http://localhost:8080 and click the Go button
+# exit the port forward:
+ctrl-c
+
+
+3.5 exercise
+-------------
+
+# check the name and IP address of the API Pod:
+kubectl get pod -l app=numbers-api -o custom-columns=NAME:metadata.name,POD_IP:status.podIP
+ 
+# delete that Pod:
+kubectl delete pod -l app=numbers-api
+ 
+# check the replacement Pod:
+kubectl get pod -l app=numbers-api -o custom-columns=NAME:metadata.name,POD_IP:status.podIP 
+ 
+# forward a port to the web app:
+kubectl port-forward deploy/numbers-web 8080:80
+ 
+# browse to the site at http://localhost:8080 and click the Go button
+ 
+# exit the port forward:
+ctrl-c
+
+3.6 exercise
+-------------
+# check the name and IP address of the API Pod:
+kubectl get pod -l app=numbers-api -o custom-columns=NAME:metadata.name,POD_IP:status.podIP
+ 
+# delete that Pod:
+kubectl delete pod -l app=numbers-api
+ 
+# check the replacement Pod:
+kubectl get pod -l app=numbers-api -o custom-columns=NAME:metadata.name,POD_IP:status.podIP 
+ 
+# forward a port to the web app:
+kubectl port-forward deploy/numbers-web 8080:80
+ 
+# browse to the site at http://localhost:8080 and click the Go button
+ 
+# exit the port forward:
+
+Exercise 3.7
+---------------
+
+# Set up the previous infrastructure related to it. 
+
+
+# deploy the LoadBalancer Service for the website--if your firewall checks 
+# that you want to allow traffic, then it is OK to say yes:
+ 
+# check the details of the Service:
+ 
+# use formatting to get the app URL from the EXTERNAL-IP field:
+
+
+
+Exercise 3.8
+-------------
+
+# delete the current API Service:
+# deploy the deployment deploy/sleep-1
+# deploy a new ExternalName Service in numbers-services/api-service-externalName.yaml
+# check the Service configuration:
+# refresh the website in your browser and test with the Go button
+# run the DNS lookup tool to resolve the Service name:
+
+Exercise 3.7
+---------------
+
+# remove the existing Service:
+# deploy the headless Service:numbers-services/api-service-headless.yaml
+# check the Service:
+# check the endpoint: 
+ # verify the DNS lookup:
+kubectl exec deploy/sleep-1 -- sh -c 'nslookup numbers-api | grep "^[^*]"'
+ # browse to the app--it will fail when you try to get a number
+
+
+
+Exercise 3.8
+---------------
+# remove the existing Service: numbers-api
+# deploy the headless Service: numbers-services/api-service-headless.yaml
+# check the Service:
+# check the endpoint: 
+# verify the DNS lookup:
+ # browse to the app--it will fail when you try to get a number
+
+
+# show the endpoints for the sleep-2 Service:
+# delete the Pod:
+ # check the endpoint is updated with the IP of the replacement Pod:
+
+# delete the whole Deployment:
+ 
+# check the endpoint still exists, with no IP addresses:
+
+Exercise 3.8
+---------------
+
+# check the Services in the default namespace:
+# check Services in the system namespace:
+# try a DNS lookup to a fully qualified Service name: numbers-api . Remove empty spaces using grep. 
+# and for a Service in the system namespace:
+
+
+Exercise 3.9
+-----------------
+# delete all  Deployments:
+
+ 
+# and Services delete all services. 
+ 
+# check what’s running:
+
+
+
+3.6 Lab
+This lab is going to give you some practice creating Services, but it’s also going to get you thinking about labels and selectors, which are powerful features of Kubernetes. The goal is to deploy Services for an updated version of the random-number app, which has had a UI makeover. Here are your hints:
+
+The lab folder for this chapter has a deployments.yaml file. Use that to deploy the app with kubectl.
+
+Check the Pods—there are two versions of the web application running.
+
+Write a Service that will make the API available to other Pods at the domain name numbers-api.
+
+Write a Service that will make version 2 of the website available externally, on port 8088.
+
+You’ll need to look closely at the Pod labels to get the correct result.
+
+This lab is an extension of the exercises in the chapter, and if you want to check my solution, it’s up on GitHub in the repository for the book:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bitbucket-pipelines.yml
+bitbucket-pipelines.yml
+
+
+image: cchamplin/bed-builder:latest
+pipelines:
+  custom:
+    cut-new-master-release:
+      - step:
+          name: Cut new master release
+          deployment: production
+          script:
+            - node /var/build/build.js "$JENKINS_DEPLOY_URL&account=$BITBUCKET_REPO_OWNER&repo=$BITBUCKET_REPO_SLUG&branch=master&job=AEM-Package-Build"
+    cut-new-qa-release:
+      - step:
+          name: Cut new qa release
+          script:
+            - node /var/build/build.js "$JENKINS_DEPLOY_URL&account=$BITBUCKET_REPO_OWNER&repo=$BITBUCKET_REPO_SLUG&snapshot=true&branch=qa&job=AEM-Package-Build"
+    cut-new-stage-release:
+      - step:
+          name: Cut new stage release
+          script:
+            - node /var/build/build.js "$JENKINS_DEPLOY_URL&account=$BITBUCKET_REPO_OWNER&repo=$BITBUCKET_REPO_SLUG&snapshot=true&branch=stage&job=AEM-Package-Build"
+    deploy-current-qa-release:
+      - step:
+          name: Deploy Current QA Release
+          deployment: test
+          script:
+            - node /var/build/build.js "$JENKINS_DEPLOY_URL&account=$BITBUCKET_REPO_OWNER&repo=$BITBUCKET_REPO_SLUG&snapshot=true&branch=qa&url=$AEM_64_QA_URL&job=AEM-Package-Deploy"
+    deploy-current-stage-release:
+      - step:
+          name: Deploy Current Stage Release
+          deployment: staging
+          script:
+            - node /var/build/build.js "$JENKINS_DEPLOY_URL&account=$BITBUCKET_REPO_OWNER&repo=$BITBUCKET_REPO_SLUG&snapshot=true&branch=stage&url=$AEM_64_STAGE_URL&job=AEM-Package-Deploy"
+
+
+
+
+
+informa-aem-builder:thin
+/var/build/scripts/build.js
+
+var request = require( 'request' );
+var path = require('path');
+var fs = require('fs');
+
+var requestUrl = process.argv[2];
+if (!requestUrl || requestUrl === "") {
+  console.log("missing url");
+  process.exit(1);
+  return;
+}
+
+request({url:requestUrl,method:"post"},(err,resp,body) => {
+  if (err || resp.statusCode != 200) {
+    console.log("Failed to kick off deployment", err, resp.statusCode,body);
+    process.exit(1);
+    return;
+  }
+  console.log("Deployment started");
+});
+
+Dattatreya2!
+
+
+AEM_STAGE_URL  https://author-informa-stage62.adobecqms.net
+AEM_QA_URL     https://author-informa-qa62.adobecqms.net
+JENKINS_DEPLOY_URL
+AEM_64_STAGE_URL  https://author-informa-stage64.adobecqms.net
+AEM_64_QA_URL   https://author-informa-qa64.adobecqms.net
+https://support.atlassian.com/bitbucket-cloud/docs/variables-and-secrets/
+
+
+bit bucket pipeline --> cchamplin/bed-builder --> Jenkins job is triggrered (jenkins runs within a docker cotnaienr) --> it invokes  informa-aem-builder:thin which in turn invokes the javascripts located in 
+
+ls /var/build/informa-aem-builder/root/var/build/scripts
+
+
+
+docker run -i --rm -v /root/.m2/repository:/root/.m2/repository -v /var/build/informa-aem-builder/root/var/build:/var/build -v /var/build/informa-aem-builder/keys/:/root/.ssh --entrypoint /usr/local/bin/node informa-aem-builder:thin /var/build/scripts/build.js $BB_USERNAME $BB_PASSWORD $AWS_KEY $AWS_SECRET $BB_ACCOUNT $BB_REPO $BUILD_URL $BB_BRANCH $S3_BUCKET $S3_ROOTPATH $COGNITO_CLIENT_ID $COGNITO_URL $COGNITO_REDIRECT $AWS_SES_KEY $AWS_SES_SECRET $PUBLISH_TOKEN $PUBLISH_URL $SNAPSHOT
+
+abcde 
+100000 pounds
+
+daemon:  *:  17110:  0:   99999:  7  :::
+1. username
+2. encrypted passwd
+3. 19170 days ( epoch time time since January 1 1970 . ) passwd was last changed. 
+4 Min number of days. 
+5. 99999 left for password change. 
+6. 7 - account will be locked. 
+7. inactivity period - Grace number of days for password change. 
+8. Account expiry date. when this account will expire. 
+9. Future use. 
+
+
+centos:  $6$coc21Bof$fi4FhPViHh6vAqmnH5PLrr/9r3FG4v7Nm9FrWMvgZNnB9cWkjkVZC2jWjSEALpndcAXf52ZDeIZpRqforix4v/: 19170: 0: 99999: 7: : :
+
+6$coc21Bof$fi4FhPViHh6vAqmnH5PLrr/9r3FG4v7Nm9FrWMvgZNnB9cWkjkVZC2jWjSEALpndcAXf52ZDeIZpRqforix4v/ = 
+
+
+. From workstation, open an SSH session to serverb as student.
+2. On serverb, ensure that newly created users have passwords that must be changed every
+30 days.
+
+3. Create the new group called consultants with a GID of 35000.
+
+
+4. Configure administrative rights for all members of consultants to be able to execute any
+command as any user.
+
+5. Create the consultant1, consultant2, and consultant3 users with consultants as
+their supplementary group.
+
+6. Set the consultant1, consultant2, and consultant3 accounts to expire in 90 days
+from the current day.
+
+7. Change the password policy for the consultant2 account to require a new password every
+15 days.
+
+
+8. Additionally, force the consultant1, consultant2, and consultant3 users to change
+their passwords on the first login
+
+
+
+%consultants        ALL=(ALL)       NOPASSWD: ALL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

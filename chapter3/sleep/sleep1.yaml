@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sleep-1
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: sleep-1
+  template:
+    metadata:
+      labels:
+        app: sleep-1
+    spec:
+      containers:
+        - name: sleep
+          image: kiamol/ch03-sleep
